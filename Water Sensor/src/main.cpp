@@ -4,26 +4,27 @@ int data = 0;
 void setup()
 {
   Serial.begin(9600);
-  pinMode(A0, INPUT);
-  pinMode(D5, OUTPUT);
-  digitalWrite(D5, LOW);
+  pinMode(35, INPUT);
+  pinMode(17, OUTPUT);
+  digitalWrite(17, LOW);
 }
 
 void loop()
 {
   delay(10);
-  data = analogRead(A0);
+  data = analogRead(35);
   Serial.print("data: ");
-  Serial.println(data);
+  Serial.print(data);
 
   if (data < 400)
   {
-    digitalWrite(D5, HIGH);
+    digitalWrite(21, HIGH);
     Serial.println("1");
   }
   else
   {
-    digitalWrite(D5, LOW);
-    Serial.println("haaaa por shod");
+    digitalWrite(21, LOW);
+    Serial.print("haaaa por shod");
   }
 }
+// ledcWrite
