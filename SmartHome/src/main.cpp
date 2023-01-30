@@ -67,16 +67,17 @@ void PoolPomp()
   WaterSensorData = analogRead(WaterSensor);
   Serial.print("WaterHeight: ");
   Serial.print(WaterSensorData);
-  if (WaterSensorData < 400)
-  {
-    digitalWrite(Pomp_pool, HIGH);
-    Serial.println("1");
-  }
-  else
-  {
-    digitalWrite(Pomp_pool, LOW);
-    Serial.print("haaaa por shod");
-  }
+  // if (WaterSensorData < 400)
+  // {
+  //   digitalWrite(Pomp_pool, HIGH);
+  //   Serial.println("1");
+  // }
+  // else
+  // {
+  //   digitalWrite(Pomp_pool, LOW);
+  //   Serial.print("haaaa por shod");
+  // }
+  digitalWrite(Pomp_pool, HIGH);
 }
 void TempretureSensorSetup()
 {
@@ -95,16 +96,16 @@ void TempretureSensor()
   // Serial.println(data);
   // delay(500);
 
-  // ADC_Tempreture = analogRead(LM35);
-  // Serial.print("SensorData: ");
-  // Serial.print(ADC_Tempreture);
-  // TempretureVoltage = ADC_Tempreture * (5000 / 1024.0);
-  // Serial.print(" Voltage: ");
-  // Serial.print(TempretureVoltage);
-  // data = (TempretureVoltage - 500.0) / 10;
-  // Serial.print(" tempreture: ");
-  // Serial.println(data);
-  // delay(500);
+  ADC_Tempreture = analogRead(LM);
+  Serial.print("SensorData: ");
+  Serial.print(ADC_Tempreture);
+  TempretureVoltage = ADC_Tempreture * (5000 / 1024.0);
+  Serial.print(" Voltage: ");
+  Serial.print(TempretureVoltage);
+  data = (TempretureVoltage - 500.0) / 10;
+  Serial.print(" tempreture: ");
+  Serial.println(data);
+  delay(500);
 }
 
 void setup()
@@ -113,20 +114,13 @@ void setup()
   GasSensorSetup();
   WaterSensorSetup();
   TempretureSensorSetup();
-  pinMode(21, LOW);
+  // pinMode(21, LOW);
 }
 
 void loop()
 {
   // DetectGas();//test done
-  // PoolPomp();
+  PoolPomp();
   // TempretureSensor();
-  Serial.print("Temp - ");  // Send a text to serial
-  Serial.print(temp.cel()); // It gets the temperature in celcius and send to serial
-  Serial.print(" C  - ");
-  Serial.print(temp.fah()); // It gets the temperature in fahrenheit and send to serial
-  Serial.print(" F  - ");
-  Serial.print(temp.kel()); // It gets the temperature in kelvin and send to serial
-  Serial.println(" K");     // Send a text to serial and give a new line
-  Serial.println(" ");
-}
+
+  }
