@@ -3,6 +3,17 @@
 #include <WiFi.h>
 // #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
+#include <SPI.h>     //https://www.arduino.cc/en/reference/SPI
+#include <MFRC522.h> //https://github.com/miguelbalboa/rfid
+#include <ESP32Servo.h>
+
+#define SS_PIN 5
+#define RST_PIN 0
+const int ipaddress[4] = {103, 97, 67, 25};
+byte nuidPICC[4] = {0, 0, 0, 0};
+MFRC522::MIFARE_Key key;
+MFRC522 rfid = MFRC522(SS_PIN, RST_PIN);
+Servo myservo;
 
 #define BLYNK_TEMPLATE_ID "TMPLH_gJp0d4"
 #define BLYNK_DEVICE_NAME "smart home"
@@ -14,12 +25,13 @@
 // #define Servo 15
 #define LM 35
 #define WaterSensor 32
-#define Fan 33
+#define FAN 33
 #define Pomp_pool 13
 #define Pomp_Watering 4
 #define SensorPower 14
 // #define Tempreture 4
 #define Gas 34
+#define SERVO 15
 
 // define RFID GPIOs
 #define RFID_RST 0
@@ -44,11 +56,109 @@ char auth[] = BLYNK_AUTH_TOKEN;
 BlynkTimer timer;
 
 int WaterSensorData = 0;
-// int TempretureSensorData = 0;
+
+// Tempreture
+//  int TempretureSensorData = 0;
 float TempretureVoltage = 0;
 float data = 0;
 int ADC_Tempreture = 0;
 LM35 temp(LM);
+
+// Fan
+const int FREQ = 5000;
+const int FANCHANNEL = 0;
+const int RES = 8;
+int sensorRead{0};
+float voltage{0};
+float tempreture{0};
+float myTemp{10.0}; // initial one
+float error{0}, firstError{0};
+
+void servoSetup()
+{
+  // Allow allocation of all timers
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+  myservo.setPeriodHertz(50); // standard 50 hz servo
+  myservo.attach(SERVO, 500, 2400);
+}
+void RFIDSetup()
+{
+  // Init Serial USB
+  Serial.begin(115200);
+  Serial.println(F("Initialize System"));
+  //  myservo.attach(6);
+  //  myservo.write(0);
+  // init rfid D8,D5,D6,D7
+  SPI.begin();
+  rfid.PCD_Init();
+
+  Serial.print(F("Reader :"));
+  rfid.PCD_DumpVersionToSerial();
+}
+void readRFID(void)
+{ /* function readRFID */
+  ////Read RFID card
+
+  for (byte i = 0; i < 6; i++)
+  {
+    key.keyByte[i] = 0xFF;
+  }
+  // Look for new 1 cards
+  if (!rfid.PICC_IsNewCardPresent())
+    return;
+
+  // Verify if the NUID has been readed
+  if (!rfid.PICC_ReadCardSerial())
+    return;
+
+  // Store NUID into nuidPICC array
+  for (byte i = 0; i < 4; i++)
+  {
+    nuidPICC[i] = rfid.uid.uidByte[i];
+  }
+
+  if (rfid.uid.uidByte[0] == 113 && rfid.uid.uidByte[1] == 235 && rfid.uid.uidByte[2] == 181 && rfid.uid.uidByte[3] == 36)
+  {
+    myservo.write(90);
+    delay(1000);
+    myservo.write(0);
+  }
+
+  Serial.print(F("RFID In dec: "));
+  printDec(rfid.uid.uidByte, rfid.uid.size);
+  Serial.println();
+
+  // Halt PICC
+  rfid.PICC_HaltA();
+
+  // Stop encryption on PCD
+  rfid.PCD_StopCrypto1();
+}
+void printHex(byte *buffer, byte bufferSize)
+{
+  for (byte i = 0; i < bufferSize; i++)
+  {
+    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    Serial.print(buffer[i], HEX);
+  }
+}
+void printDec(byte *buffer, byte bufferSize)
+{
+  for (byte i = 0; i < bufferSize; i++)
+  {
+    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    Serial.print(buffer[i], DEC);
+  }
+}
+
+void sensorPower()
+{
+  pinMode(SensorPower, OUTPUT);
+  digitalWrite(SensorPower, HIGH);
+}
 
 void GasSensorSetup()
 {
@@ -75,6 +185,38 @@ void DetectGas()
   delay(100);
 }
 
+void WateringSetup()
+{
+  pinMode(Pomp_Watering, OUTPUT);
+  digitalWrite(Pomp_Watering, LOW);
+}
+
+void FanSetup()
+{
+  pinMode(FAN, OUTPUT);
+  digitalWrite(FAN, LOW);
+  ledcSetup(FANCHANNEL, FREQ, RES);
+  ledcAttachPin(FAN, FANCHANNEL);
+  firstError = TempretureSensor() - myTemp;
+}
+void Fan()
+{
+  error = TempretureSensor() - myTemp;
+  if (error > firstError)
+  {
+    firstError = TempretureSensor() - myTemp;
+  }
+  if (error > 0.0)
+  {
+    ledcWrite(FANCHANNEL, error * 0.95 * (255.0 / 10.0));
+    delay(15);
+  }
+  else
+  {
+    ledcWrite(FANCHANNEL, 0);
+  }
+}
+
 void WaterSensorSetup()
 {
   pinMode(WaterSensor, INPUT);
@@ -96,13 +238,21 @@ void PoolPomp()
   //   digitalWrite(Pomp_pool, LOW);
   //   Serial.print("haaaa por shod");
   // }
+
   digitalWrite(Pomp_pool, HIGH);
+  delay(1000);
+  digitalWrite(Pomp_pool, LOW);
+  delay(1000);
+
+  // ledcSetup(0, FREQ, RES);
+  // ledcAttachPin(Pomp_pool, 0);
 }
+
 void TempretureSensorSetup()
 {
   pinMode(LM, INPUT);
 }
-void TempretureSensor()
+float TempretureSensor()
 {
   // TempretureSensorData = analogRead(LM35);
   // Serial.print("SensorData: ");
@@ -125,6 +275,7 @@ void TempretureSensor()
   Serial.print(" tempreture: ");
   Serial.println(data);
   delay(500);
+  return data;
 }
 
 void LEDSetup()
@@ -136,21 +287,19 @@ void LEDSetup()
   pinMode(LED5, OUTPUT);
   pinMode(LED6, OUTPUT);
 
-  // digitalWrite(LED1, LOW);
-  // digitalWrite(LED2, HIGH);
-  // digitalWrite(LED3, HIGH);
-  // digitalWrite(LED4, HIGH);
-  // digitalWrite(LED5, HIGH);
-  // digitalWrite(LED6, HIGH);
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED3, LOW);
+  digitalWrite(LED4, LOW);
+  digitalWrite(LED5, LOW);
+  digitalWrite(LED6, LOW);
 }
-
 void BlynkSetup()
 {
   char ssid[] = SSID;
   char pass[] = PSWD;
   Blynk.begin(auth, ssid, pass);
 }
-
 // LED1 Control Blynk Function
 BLYNK_WRITE(V0)
 {
@@ -167,7 +316,6 @@ BLYNK_WRITE(V0)
   Blynk.virtualWrite(V1, pinValue);
   Blynk.virtualWrite(V8, pinValue);
 }
-
 // Adjusting the Pool Water Level
 BLYNK_WRITE(V4) // pool order
 {
@@ -176,7 +324,6 @@ BLYNK_WRITE(V4) // pool order
   Serial.print("V4(Pool) value is: ");
   Serial.println(adj_pool_water_level);
 }
-
 // Adjusting the Room Tempreture
 BLYNK_WRITE(V7)
 {
@@ -185,7 +332,6 @@ BLYNK_WRITE(V7)
   Serial.print("V7 value is: ");
   Serial.println(adj_room_tempreture);
 }
-
 // Waterig Timing
 BLYNK_WRITE(V5)
 {
@@ -259,33 +405,33 @@ BLYNK_WRITE(V5)
 void setup()
 {
   Serial.begin(115200);
+  sensorPower();
+
+  // sensorSetup
   GasSensorSetup();
   WaterSensorSetup();
   TempretureSensorSetup();
-  // pinMode(21, LOW);
+  FanSetup();
+  WateringSetup();
 
   // Blynk Setup and WiFi connection
-  BlynkSetup();
+  // BlynkSetup();
 
   // LED PinMode Setup
   LEDSetup();
+
+  // test
+  // pinMode(RFID_MOSI, OUTPUT);
+  // digitalWrite(RFID_MOSI, HIGH);
 }
 
 void loop()
 {
-
   // DetectGas();//test done
   PoolPomp();
   // TempretureSensor();
-  // Serial.print("Temp - ");  // Send a text to serial
-  // Serial.print(temp.cel()); // It gets the temperature in celcius and send to serial
-  // Serial.print(" C  - ");
-  // Serial.print(temp.fah()); // It gets the temperature in fahrenheit and send to serial
-  // Serial.print(" F  - ");
-  // Serial.print(temp.kel()); // It gets the temperature in kelvin and send to serial
-  // Serial.println(" K");     // Send a text to serial and give a new line
-  // Serial.println(" ");
-
+  Fan();
+  Serial.println("  ");
   // Blynk loop function (do not remove or coment this)
-  Blynk.run();
+  // Blynk.run();
 }

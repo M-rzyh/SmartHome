@@ -1,0 +1,12 @@
+1. Sensor test:
+		RFID
+		pomp	2ta:
+			Watering
+			Pool		board: /code:+
+		Fan				/code:+
+		water sensor	board:+/code:+
+		Servo			
+		LED	6ta
+		Dood Sensor		board:+/code:+
+		Tempreture Sensor
+		Blink
