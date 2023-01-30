@@ -107,17 +107,37 @@ void TempretureSensor()
   // delay(500);
 }
 
+void LEDSetup()
+{
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+  pinMode(LED5, OUTPUT);
+  pinMode(LED6, OUTPUT);
+
+  // digitalWrite(LED1, LOW);
+  // digitalWrite(LED2, HIGH);
+  // digitalWrite(LED3, HIGH);
+  // digitalWrite(LED4, HIGH);
+  // digitalWrite(LED5, HIGH);
+  // digitalWrite(LED6, HIGH);
+}
+
 void setup()
 {
   Serial.begin(115200);
   GasSensorSetup();
   WaterSensorSetup();
   TempretureSensorSetup();
-  pinMode(21, LOW);
+
+  // LED PinMode Setup
+  LEDSetup();
 }
 
 void loop()
 {
+  
   // DetectGas();//test done
   // PoolPomp();
   // TempretureSensor();
