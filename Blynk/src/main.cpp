@@ -148,7 +148,7 @@ void loop()
 
 
     m+=500;
-    Blynk.run();
+    // Blynk.run();
     // Blynk.virtualWrite(V3, value);
     // Serial.println(value);
     // Serial.println(value2);
