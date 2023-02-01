@@ -3,10 +3,10 @@
 		pomp	2ta:
 			Watering
 			Pool		board: /code:+
-		Fan				/code:+
+		Fan				code:+/Board:+
 		water sensor	board:+/code:++
 		Servo			code:+
 		LED	6ta
 		Dood Sensor		board:+/code:++
-		Tempreture Sensor	code:+
+		Tempreture Sensor	code:+/Board:+
 		Blink
