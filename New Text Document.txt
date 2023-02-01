@@ -1,12 +1,12 @@
 1. Sensor test:
-		RFID
+		RFID			code:+
 		pomp	2ta:
 			Watering
 			Pool		board: /code:+
 		Fan				/code:+
-		water sensor	board:+/code:+
-		Servo			
+		water sensor	board:+/code:++
+		Servo			code:+
 		LED	6ta
-		Dood Sensor		board:+/code:+
-		Tempreture Sensor
+		Dood Sensor		board:+/code:++
+		Tempreture Sensor	code:+
 		Blink

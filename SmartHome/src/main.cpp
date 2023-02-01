@@ -62,17 +62,15 @@ int WaterSensorData = 0;
 float TempretureVoltage = 0;
 float data = 0;
 int ADC_Tempreture = 0;
+float myTemp{10.0}; // initial one
+float error{0}, firstError{0};
 LM35 temp(LM);
 
 // Fan
 const int FREQ = 5000;
 const int FANCHANNEL = 0;
 const int RES = 8;
-int sensorRead{0};
-float voltage{0};
-float tempreture{0};
-float myTemp{10.0}; // initial one
-float error{0}, firstError{0};
+
 
 void servoSetup()
 {
