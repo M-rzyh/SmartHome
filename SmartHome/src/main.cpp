@@ -96,6 +96,14 @@ void RFIDSetup()
   Serial.print(F("Reader :"));
   rfid.PCD_DumpVersionToSerial();
 }
+void printDec(byte *buffer, byte bufferSize)
+{
+  for (byte i = 0; i < bufferSize; i++)
+  {
+    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    Serial.print(buffer[i], DEC);
+  }
+}
 void readRFID(void)
 { /* function readRFID */
   ////Read RFID card
@@ -143,14 +151,7 @@ void printHex(byte *buffer, byte bufferSize)
     Serial.print(buffer[i], HEX);
   }
 }
-void printDec(byte *buffer, byte bufferSize)
-{
-  for (byte i = 0; i < bufferSize; i++)
-  {
-    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
-    Serial.print(buffer[i], DEC);
-  }
-}
+
 
 void sensorPower()
 {
@@ -187,6 +188,31 @@ void WateringSetup()
 {
   pinMode(Pomp_Watering, OUTPUT);
   digitalWrite(Pomp_Watering, LOW);
+}
+float TempretureSensor()
+{
+  // TempretureSensorData = analogRead(LM35);
+  // Serial.print("SensorData: ");
+  // Serial.print(TempretureSensorData);
+  // TempretureVoltage = TempretureSensorData * (5000 / 1024.0);
+  // Serial.print(" Voltage: ");
+  // Serial.print(TempretureVoltage);
+  // data = (TempretureVoltage - 500) / 10;
+  // Serial.print(" tempreture: ");
+  // Serial.println(data);
+  // delay(500);
+
+  ADC_Tempreture = analogRead(LM);
+  Serial.print("SensorData: ");
+  Serial.print(ADC_Tempreture);
+  TempretureVoltage = ADC_Tempreture * (5000 / 1024.0);
+  Serial.print(" Voltage: ");
+  Serial.print(TempretureVoltage);
+  data = (TempretureVoltage - 500.0) / 10;
+  Serial.print(" tempreture: ");
+  Serial.println(data);
+  delay(500);
+  return data;
 }
 
 void FanSetup()
@@ -250,31 +276,7 @@ void TempretureSensorSetup()
 {
   pinMode(LM, INPUT);
 }
-float TempretureSensor()
-{
-  // TempretureSensorData = analogRead(LM35);
-  // Serial.print("SensorData: ");
-  // Serial.print(TempretureSensorData);
-  // TempretureVoltage = TempretureSensorData * (5000 / 1024.0);
-  // Serial.print(" Voltage: ");
-  // Serial.print(TempretureVoltage);
-  // data = (TempretureVoltage - 500) / 10;
-  // Serial.print(" tempreture: ");
-  // Serial.println(data);
-  // delay(500);
 
-  ADC_Tempreture = analogRead(LM);
-  Serial.print("SensorData: ");
-  Serial.print(ADC_Tempreture);
-  TempretureVoltage = ADC_Tempreture * (5000 / 1024.0);
-  Serial.print(" Voltage: ");
-  Serial.print(TempretureVoltage);
-  data = (TempretureVoltage - 500.0) / 10;
-  Serial.print(" tempreture: ");
-  Serial.println(data);
-  delay(500);
-  return data;
-}
 
 void LEDSetup()
 {
@@ -408,7 +410,7 @@ void setup()
   // sensorSetup
   GasSensorSetup();
   WaterSensorSetup();
-  TempretureSensorSetup();
+  // TempretureSensorSetup();
   FanSetup();
   WateringSetup();
 
@@ -428,8 +430,21 @@ void loop()
   // DetectGas();//test done
   PoolPomp();
   // TempretureSensor();
-  Fan();
+  // Fan();
   Serial.println("  ");
+  digitalWrite(LED1, HIGH);
+  digitalWrite(LED3, HIGH);
+  digitalWrite(LED4, HIGH);
+  digitalWrite(LED5, HIGH);
+  delay(1000);
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED3, LOW);
+    digitalWrite(LED4, LOW);
+    digitalWrite(LED5, LOW);
+
+  delay(1000);
+
+  digitalWrite(LED2, HIGH);
   // Blynk loop function (do not remove or coment this)
   // Blynk.run();
 }
