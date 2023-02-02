@@ -52,6 +52,7 @@ Servo myservo;
 
 char auth[] = BLYNK_AUTH_TOKEN;
 BlynkTimer timer;
+int blynkTimer = 0;
 
 // define WiFi SSID and PSWD
 char ssid[] = "mohsen";
@@ -61,7 +62,7 @@ int WaterSensorData = 0;
 int poolHeight = 0;
 
 // Tempreture
-float tempArr[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+float tempArr[20];
 float TempretureVoltage = 0;
 float TempretureData = 0;
 int ADC_Tempreture = 0;
@@ -421,10 +422,21 @@ BLYNK_WRITE(V5)
 
   Serial.println();
 }
+void blynkLoop()
+{
+  if(millis() == blynkTimer + 1000)
+  {
+    
+    blynkTimer = 0;
+  }
 
+
+}
 void setup()
 {
   Serial.begin(115200);
+  blynkTimer = millis();
+
   // sensorPower();
 
   // sensorSetup
