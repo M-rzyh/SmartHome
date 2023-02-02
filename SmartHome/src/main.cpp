@@ -318,12 +318,8 @@ void BlynkSetup()
 BLYNK_WRITE(V0)
 {
   int pinValue = param.asInt();
-  digitalWrite(LED4, pinValue);
-  digitalWrite(LED3, pinValue);
+
   digitalWrite(LED2, pinValue);
-  // digitalWrite(LED1, pinValue);
-  // digitalWrite(LED5, pinValue);
-  // digitalWrite(LED6, pinValue);
 
   // You can also use:
   // String i = param.asStr();
@@ -333,8 +329,46 @@ BLYNK_WRITE(V0)
   Serial.println(pinValue);
 
   // Write on the Server
-  Blynk.virtualWrite(V1, pinValue);
-  Blynk.virtualWrite(V8, pinValue);
+  // Blynk.virtualWrite(V1, pinValue);
+  // Blynk.virtualWrite(V8, pinValue);
+}
+
+BLYNK_WRITE(V9)
+{
+  int pinValue = param.asInt();
+  // digitalWrite(LED4, pinValue);
+  // digitalWrite(LED3, pinValue);
+  digitalWrite(LED3, pinValue);
+
+  // You can also use:
+  // String i = param.asStr();
+  // double d = param.asDouble();
+
+  Serial.print("V0(LED1) value is: ");
+  Serial.println(pinValue);
+
+  // Write on the Server
+  // Blynk.virtualWrite(V1, pinValue);
+  // Blynk.virtualWrite(V8, pinValue);
+}
+
+BLYNK_WRITE(V10)
+{
+  int pinValue = param.asInt();
+  // digitalWrite(LED4, pinValue);
+  // digitalWrite(LED3, pinValue);
+  digitalWrite(LED4, pinValue);
+
+  // You can also use:
+  // String i = param.asStr();
+  // double d = param.asDouble();
+
+  Serial.print("V0(LED1) value is: ");
+  Serial.println(pinValue);
+
+  // Write on the Server
+  // Blynk.virtualWrite(V1, pinValue);
+  // Blynk.virtualWrite(V8, pinValue);
 }
 // Adjusting the Pool Water Level
 BLYNK_WRITE(V4) // pool order
